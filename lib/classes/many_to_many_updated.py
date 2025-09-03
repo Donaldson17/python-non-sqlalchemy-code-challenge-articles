@@ -7,9 +7,9 @@ class Article(object):
         if not isinstance(magazine, Magazine):
             raise TypeError("Magazine must be of type Magazine")
         if not isinstance(title, str):
-            title = str(title)
+            raise TypeError("Title must be a string")
         if len(title) < 5 or len(title) > 50:
-            title = "Default Title"
+            raise ValueError("Title must be between 5 and 50 characters")
         
         self._author = author
         self._magazine = magazine
@@ -20,11 +20,6 @@ class Article(object):
     def title(self):
         return self._title
     
-    @title.setter
-    def title(self, value):
-        # Silently fail for immutability
-        pass
-
     @property
     def author(self):
         return self._author
@@ -32,7 +27,7 @@ class Article(object):
     @author.setter
     def author(self, value):
         if not isinstance(value, Author):
-            return  # Silently fail
+            raise TypeError("Author must be of type Author")
         self._author = value
     
     @property
@@ -42,25 +37,32 @@ class Article(object):
     @magazine.setter
     def magazine(self, value):
         if not isinstance(value, Magazine):
-            return  # Silently fail
+            raise TypeError("Magazine must be of type Magazine")
         self._magazine = value
+    
+    def __setattr__(self, name, value):
+        if name in ['_title', '_author', '_magazine'] and hasattr(self, name):
+            if name == '_title':
+                raise AttributeError("Title is immutable")
+            return
+        super().__setattr__(name, value)
         
 class Author(object):
     def __init__(self, name):
         if not isinstance(name, str):
-            name = str(name)
+            raise TypeError("Name must be a string")
         if len(name) == 0:
-            name = "Default Author"
+            raise ValueError("Name must be longer than 0 characters")
         self._name = name
     
     @property
     def name(self):
         return self._name
     
-    @name.setter
-    def name(self, value):
-        # Silently fail for immutability
-        pass
+    def __setattr__(self, name, value):
+        if name == '_name' and hasattr(self, '_name'):
+            raise AttributeError("Name is immutable")
+        super().__setattr__(name, value)
 
     def articles(self):
         return [article for article in Article.all if article.author == self]
@@ -81,13 +83,13 @@ class Magazine(object):
     
     def __init__(self, name, category):
         if not isinstance(name, str):
-            name = str(name)
+            raise TypeError("Name must be a string")
         if not 2 <= len(name) <= 16:
-            name = name[:16] if len(name) > 16 else "Mag"
+            raise ValueError("Name must be between 2 and 16 characters")
         if not isinstance(category, str):
-            category = str(category)
+            raise TypeError("Category must be a string")
         if len(category) == 0:
-            category = "General"
+            raise ValueError("Category must be longer than 0 characters")
             
         self._name = name
         self._category = category
@@ -100,9 +102,9 @@ class Magazine(object):
     @name.setter
     def name(self, value):
         if not isinstance(value, str):
-            return  # Silently fail
+            raise TypeError("Name must be a string")
         if not 2 <= len(value) <= 16:
-            return  # Silently fail
+            raise ValueError("Name must be between 2 and 16 characters")
         self._name = value
     
     @property
@@ -112,9 +114,9 @@ class Magazine(object):
     @category.setter
     def category(self, value):
         if not isinstance(value, str):
-            return  # Silently fail
+            raise TypeError("Category must be a string")
         if len(value) == 0:
-            return  # Silently fail
+            raise ValueError("Category must be longer than 0 characters")
         self._category = value
 
     def articles(self):
